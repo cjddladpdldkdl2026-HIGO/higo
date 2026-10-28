@@ -12,6 +12,7 @@ const DEFAULTS = {
     sensitivity: 1.0,
     scenario: 'grid',
     difficulty: 'medium',
+    players: '1',
     muted: false,
   },
   // best[`${scenario}:${difficulty}`] = { score, accuracy, avgReact, plays }

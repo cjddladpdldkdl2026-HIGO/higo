@@ -13,6 +13,36 @@ other landmarks as decoys. Shoot the right one.
 - Bones and landmarks live in `src/anatomy.js` (`BONES`): an image plus
   landmark pixel coordinates in that image.
 
+### 3D Bones — stages (1P or 2P split screen)
+
+Five stages in a row: **scapula → humerus → hand → pelvis → sacrum**. Each
+stage asks 8 landmarks on one 3D bone (the hand asks individual carpals,
+metacarpals and phalanges). The bone turns to face each landmark and identical
+targets appear on the real landmark and on decoy landmarks on the same side
+(Easy 3, Medium/Hard 5).
+
+- 1P: get at least 60% of a stage right to move on; otherwise it restarts.
+- Shooting a decoy costs points (150 × the difficulty multiplier; the score
+  can go below zero) but doesn't end the question — keep shooting until the
+  real target is hit or time runs out.
+- 2P: the screen splits and both players race on the same question. The first
+  to hit the real target scores. Every stage is played once and the totals
+  decide the winner.
+- P1: mouse aims, click fires, right-drag turns the bone.
+- P2: arrow keys aim, Enter (or Space) fires, Shift + arrows turn the bone.
+- `Esc` ends the run; `M` (or the speaker button) toggles sound.
+- Bones, landmarks and turn directions live in `src/bones.js`; the stage flow
+  is in `src/bone3d.js`; synthesized sound effects are in `src/sfx.js`.
+- Korean names follow the KMA medical terminology (의학용어집 6th ed.), with
+  the Sino-Korean term in parentheses where the KMA lists one.
+- The start screen is just **Game Start** plus 1P/2P and difficulty; the older
+  FPS and photo scenarios are still in the code but hidden from the menu.
+- The 3D models are BodyParts3D (© 2008 DBCLS, CC BY-SA 2.1 JP); see
+  `assets/BODYPARTS3D-LICENSE.txt`.
+
+Run locally on Windows with `powershell -File serve.ps1`, then open
+http://localhost:8000.
+
 Forked from [LUCASDREYER/aim-trainer-game](https://github.com/LUCASDREYER/aim-trainer-game)
 (MIT). The original README follows.
 

@@ -1,0 +1,16 @@
+The .bin meshes in this folder are BodyParts3D models, converted to an indexed
+float32/uint16 mesh for the browser:
+
+  scapula-right.bin  FMA13395 right scapula
+  humerus-right.bin  FMA23130 right humerus
+  hand-right.bin     27 right-hand bones (carpals, metacarpals, phalanges)
+  pelvis.bin         FMA16586 right hip bone + FMA16587 left hip bone + FMA16202 sacrum
+  sacrum.bin         FMA16202 sacrum
+
+BodyParts3D, Copyright (c) 2008 Life Science Integrated Database Center
+licensed by CC Attribution-Share Alike 2.1 Japan
+https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en
+Source: https://github.com/Kevin-Mattheus-Moerman/BodyParts3D
+
+These mesh files (and any changes to them) are shared under the same license.
+The game code remains under the MIT license in LICENSE.

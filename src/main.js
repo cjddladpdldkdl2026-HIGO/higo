@@ -4,26 +4,31 @@
  * machine (menu → playing → results), the input handlers, and the loop.
  * ========================================================================== */
 
-import { ROUND_SECONDS, DIFF, SCENARIOS, ANATOMY_SCENARIOS } from './config.js';
+import { ROUND_SECONDS, DIFF, SCENARIOS, ANATOMY_SCENARIOS, BONE3D_SCENARIOS } from './config.js';
 import { Storage } from './storage.js';
 import { createWorld } from './scene.js';
 import { Targets } from './targets.js';
 import { Anatomy } from './anatomy.js';
+import { Bone3D } from './bone3d.js';
 import { UI } from './ui.js';
 
 const canvas = document.getElementById('canvas');
 const world = createWorld(canvas);
 const targets = new Targets(world.scene);
 const anatomy = new Anatomy(world.scene, world.camera);
+const bone3d = new Bone3D();
 const ui = new UI();
 
 // ── Persistent settings + run state ──────────────────────────────────────────
 const settings = Storage.getSettings();
 
 const state = {
-  scenario: settings.scenario,
+  // The start screen only offers the 3D bone stages (the other scenarios are
+  // still wired up but hidden in the menu).
+  scenario: 'bones3d',
   difficulty: settings.difficulty,
   sensitivity: settings.sensitivity,
+  players: settings.players,
   playing: false,
   // per-run
   score: 0, shots: 0, hits: 0, streak: 0, bestStreak: 0,
@@ -68,6 +73,10 @@ ui.init(state, {
     anatomy.configure(state.difficulty);
     Storage.saveSettings({ difficulty: id });
     ui.refreshBest(state.scenario, state.difficulty);
+  },
+  onPlayers(id) {
+    state.players = id;
+    Storage.saveSettings({ players: id });
   },
   onSensitivity(v) {
     state.sensitivity = v;
@@ -197,11 +206,43 @@ if (touchMode) {
   // Tailor the menu copy for touch.
   const hint = document.querySelector('.footer-row .hint');
   if (hint) hint.textContent = 'Drag to aim · tap or FIRE to shoot · best in landscape.';
-  ui.el.start.textContent = 'Tap to Play';
+  ui.el.start.textContent = 'Game Start';
 }
 
 // ── Game lifecycle ─────────────────────────────────────────────────────────────
+/* The 3D bone stages run in their own overlay with their own loop; the FPS
+ * world just idles behind them until the run ends. */
+bone3d.onEnd = ({ players, difficulty, scores, stagesCleared, completed }) => {
+  ui.showMenu();
+  const progress = completed ? 'All 5 bones cleared' : `${stagesCleared} / 5 bones cleared`;
+  if (players === 2) {
+    ui.showDuelResults(scores);
+  } else {
+    const s = scores[0];
+    const run = { scenario: state.scenario, difficulty, ...s, ts: Date.now() };
+    const { records } = Storage.recordRun(run);
+    ui.showResults(run, records);
+    ui.refreshBest(state.scenario, state.difficulty);
+  }
+  ui.el.sub.textContent = progress;
+  ui.el.start.textContent = 'Game Start';
+};
+
+function startBone3D() {
+  // Drop focus from the start button so P2's Enter/Space can't re-click it.
+  document.activeElement?.blur();
+  ui.hideMenu();
+  ui.el.hud.classList.add('hide');
+  ui.clearResults();
+  bone3d.start({
+    players: state.players === '2' ? 2 : 1,
+    difficulty: state.difficulty,
+  });
+}
+
 function startGame() {
+  if (BONE3D_SCENARIOS.has(state.scenario)) { startBone3D(); return; }
+
   // reset run state
   Object.assign(state, {
     playing: true, score: 0, shots: 0, hits: 0, streak: 0, bestStreak: 0, reactTimes: [],

@@ -13,10 +13,19 @@ export const SCENARIOS = [
   { id: 'grid',     label: 'Gridshot', blurb: 'A field of targets. Clear them fast.' },
   { id: 'tracking', label: 'Tracking', blurb: 'Targets drift. Keep your aim glued on.' },
   { id: 'scapula',  label: 'Scapula',  blurb: 'A landmark is named — pick the real target among the decoys.', seconds: 60 },
+  { id: 'bones3d', label: '3D Bones', blurb: 'Stages: scapula → humerus → hand → pelvis → sacrum. Hit the named landmark among decoys; clear 60% to advance. 1P or 2P.' },
 ];
 
 // Scenarios that use the bone board (anatomy.js) instead of floating targets.
 export const ANATOMY_SCENARIOS = new Set(['scapula']);
+
+// Scenarios run by the 3D bone race (bone3d.js), which supports 2 players.
+export const BONE3D_SCENARIOS = new Set(['bones3d']);
+
+export const PLAYERS = [
+  { id: '1', label: '1P' },
+  { id: '2', label: '2P · split screen' },
+];
 
 export const DIFFICULTIES = [
   { id: 'easy',   label: 'Easy' },

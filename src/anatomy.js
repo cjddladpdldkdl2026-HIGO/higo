@@ -16,7 +16,8 @@ const BOARD_DIST = 8;
 const BOARD_POS = new THREE.Vector3(0, 1.2, 7 - BOARD_DIST);
 // Max share of the view the board may use; leaves room for the prompt above
 // and the HUD dock below.
-const FILL_H = 0.8, FILL_W = 0.94;
+const FILL_H = 0.7, FILL_W = 0.94;
+const DROP = 0.045;   // shift the board down this share of the view height
 const PAD = 24;                        // texture px of panel around the photo
 const REVEAL_MS = 900;                 // how long an answer stays shown
 
@@ -250,6 +251,8 @@ export class Anatomy {
     const viewW = viewH * cam.aspect;
     const h = Math.min(viewH * FILL_H, (viewW * FILL_W) / this.aspect);
     this.board.scale.set(h, h, 1);
+    // Sit below the landmark prompt instead of under it.
+    this.board.position.y = BOARD_POS.y - viewH * DROP;
   }
 
   _loadPhoto() {

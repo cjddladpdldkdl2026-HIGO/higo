@@ -4,7 +4,7 @@
  * transient hit/miss/combo feedback. Holds no game state; main.js calls in.
  * ========================================================================== */
 
-import { SCENARIOS, DIFFICULTIES } from './config.js';
+import { SCENARIOS, DIFFICULTIES, PLAYERS, BONE3D_SCENARIOS } from './config.js';
 import { Storage } from './storage.js';
 
 const $ = (id) => document.getElementById(id);
@@ -37,6 +37,9 @@ export class UI {
     });
     this._buildSeg(this.el.difficulty, DIFFICULTIES, state.difficulty, (id) => {
       handlers.onDifficulty(id);
+    });
+    this._buildSeg($('players'), PLAYERS, state.players, (id) => {
+      handlers.onPlayers(id);
     });
 
     this.el.sens.value = state.sensitivity;
@@ -79,6 +82,7 @@ export class UI {
   setScenarioBlurb(id) {
     const s = SCENARIOS.find(s => s.id === id);
     this.el.blurb.textContent = s ? s.blurb : '';
+    $('players-field').classList.toggle('hide', !BONE3D_SCENARIOS.has(id));
   }
 
   refreshBest(scenario, difficulty) {
@@ -178,6 +182,27 @@ export class UI {
     this.el.start.textContent = 'Run It Back';
   }
   clearResults() { this.el.results.innerHTML = ''; }
+
+  /** Head-to-head summary for a 2-player 3D round. */
+  showDuelResults(scores) {
+    this.el.sub.textContent = 'Round complete';
+    const [a, b] = scores;
+    const title = a.score === b.score ? 'Draw' : (a.score > b.score ? '★ P1 Wins ★' : '★ P2 Wins ★');
+    const col = (label, s, win) =>
+      `<div class="res ${win ? 'record' : ''}">
+         <span>${label}</span><strong>${fmt(s.score)}</strong>
+         <span>${s.hits} hits · ${s.accuracy}% · ${s.avgReact || 0}ms</span>
+       </div>`;
+    this.el.results.innerHTML = `
+      <div class="results">
+        <p class="results-title">${title}</p>
+        <div class="results-grid">
+          ${col('P1 · Mouse', a, a.score > b.score)}
+          ${col('P2 · Keyboard', b, b.score > a.score)}
+        </div>
+      </div>`;
+    this.el.start.textContent = 'Rematch';
+  }
 
   /* ── Stats modal ─────────────────────────────────────────────────────────── */
   openStats() { this.renderStats(); this.el.modal.classList.remove('hide'); }

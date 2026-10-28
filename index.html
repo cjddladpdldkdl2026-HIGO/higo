@@ -66,29 +66,81 @@
   <button id="fire-btn" class="hide" aria-label="Fire">FIRE</button>
   <button id="quit-btn" class="hide" aria-label="Quit round">EXIT</button>
 
+  <!-- 3D bone race (bone3d.js): question bar on top, one view per player below -->
+  <div id="arena" class="hide">
+    <header class="arena-top">
+      <div class="ap" id="arena-p1">
+        <span class="ap-tag">P1</span><span class="ap-score">0</span><span class="ap-sub"></span>
+      </div>
+      <div class="arena-q">
+        <span class="arena-label">Hit the</span>
+        <span id="arena-name"></span>
+        <span id="arena-ko"></span>
+        <div class="arena-bar"><span id="arena-bar-fill"></span></div>
+        <span id="arena-note" class="arena-note"></span>
+      </div>
+      <div class="ap ap--right" id="arena-p2">
+        <span class="ap-tag">P2</span><span class="ap-score">0</span><span class="ap-sub"></span>
+      </div>
+      <div class="arena-time"><span>Stage</span><strong id="arena-time">1/5</strong></div>
+      <button id="arena-mute" class="arena-mute" aria-label="Sound on/off (M)" title="Sound on/off (M)">🔊</button>
+    </header>
+    <main class="arena-views">
+      <section class="view" id="view-1">
+        <span class="v-tag">P1 · Mouse</span>
+        <canvas></canvas>
+        <div class="v-cross" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+        <div class="v-note"></div>
+      </section>
+      <section class="view" id="view-2">
+        <span class="v-tag">P2 · Keyboard</span>
+        <canvas></canvas>
+        <div class="v-cross v-cross--p2" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+        <div class="v-note"></div>
+      </section>
+    </main>
+    <div id="arena-card" class="arena-card hide">
+      <span class="ac-kicker"></span>
+      <strong class="ac-title"></strong>
+      <span class="ac-sub"></span>
+    </div>
+    <footer class="arena-foot">
+      <span id="arena-help"></span>
+      <span class="arena-credit">3D model: BodyParts3D © 2008 DBCLS · CC BY-SA 2.1 JP</span>
+    </footer>
+  </div>
+
   <!-- Main menu / results overlay -->
   <div id="overlay">
     <div class="panel">
       <header class="brand">
         <h1 class="logo" data-text="NEONSHOT">NEONSHOT</h1>
-        <p class="tagline" id="overlay-sub">First-person aim trainer</p>
+        <p class="tagline" id="overlay-sub">해부학 에임 트레이너 · Anatomy aim trainer</p>
       </header>
 
       <div id="results-area"></div>
 
-      <div class="config">
-        <div class="field">
+      <!-- Simple start: one big button, then two small choices. The scenario,
+           sensitivity and stats controls stay in the DOM (ui.js wires them)
+           but are hidden; the game always runs the 3D bone stages. -->
+      <button id="start-btn" class="btn btn--primary btn--start">Game Start</button>
+
+      <div class="config config--compact">
+        <div class="field hide">
           <label class="field-label">Scenario</label>
           <div class="seg" id="scenario"></div>
           <p class="field-hint" id="scenario-blurb"></p>
         </div>
 
-        <div class="field">
-          <label class="field-label">Difficulty</label>
-          <div class="seg" id="difficulty"></div>
+        <div class="field" id="players-field">
+          <div class="seg" id="players"></div>
         </div>
 
         <div class="field">
+          <div class="seg" id="difficulty"></div>
+        </div>
+
+        <div class="field hide">
           <label class="field-label">Sensitivity <span class="mono" id="sens-readout">1.00</span></label>
           <input id="sens-slider" type="range" min="0.2" max="3" step="0.05" value="1" />
         </div>
@@ -99,9 +151,7 @@
         </div>
       </div>
 
-      <button id="start-btn" class="btn btn--primary">Enter the Grid</button>
-
-      <div class="footer-row">
+      <div class="footer-row hide">
         <button id="stats-btn" class="btn btn--ghost">Stats &amp; Records</button>
         <span class="hint">Pointer-lock prompt appears on start.</span>
       </div>
