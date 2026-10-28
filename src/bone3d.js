@@ -30,6 +30,8 @@ const CARD_MS = 1800;     // stage title / result card
 const TURN_MS = 450;      // bone turning to face the new landmark
 const REVEAL_MS = 900;    // answer shown before the next question
 const WRONG_PENALTY = 150; // points lost for shooting a decoy (× difficulty mult)
+const COMBO_BONUS = 50;   // per clean hit in a row beyond the first (× difficulty mult)
+const COMBO_MAX = 5;      // bonus stops growing at this many steps
 const KEY_SPEED = [260, 950]; // P2 crosshair px/s: start → full after ramp
 const KEY_RAMP = 0.45;    // s to reach full speed
 const ROT_SPEED = 2.2;    // rad/s for keyboard rotation
@@ -466,17 +468,22 @@ export class Bone3D {
         || performance.now() < this.born) return;
     Sfx.shot();   // every trigger pull bangs, on a target or not
     const picked = v.pick();
-    if (!picked) { v.flash('shoot a target', ''); return; }   // off every target: not counted
+    // Off every target: not counted for accuracy, but it breaks the combo.
+    if (!picked) { s.streak = 0; this._updateScores(); v.flash('shoot a target', ''); return; }
 
     s.shots++;
     if (picked === this.current) {
       Sfx.hit();
+      const mult = BONE3D_DIFF[this.difficulty].mult;
       const rt = performance.now() - this.born;
-      const pts = Math.round(Math.max(50, 500000 / Math.max(rt, 250)) * BONE3D_DIFF[this.difficulty].mult);
-      s.hits++; s.score += pts; s.react.push(rt);
+      const pts = Math.round(Math.max(50, 500000 / Math.max(rt, 250)) * mult);
+      // Streak only survives clean hits (no blank or decoy shots, no time-outs),
+      // so it doubles as the combo: the 2nd in a row earns a bonus, growing after.
       s.streak++; s.bestStreak = Math.max(s.bestStreak, s.streak);
+      const bonus = Math.round(Math.min(s.streak - 1, COMBO_MAX) * COMBO_BONUS * mult);
+      s.hits++; s.score += pts + bonus; s.react.push(rt);
       this.stageHits[i]++;
-      v.flash(`+${pts}`, 'good');
+      v.flash(bonus ? `+${pts}  COMBO ×${s.streak} +${bonus}` : `+${pts}`, 'good');
       this._reveal(this.players === 2 ? `P${i + 1} got it — ${this.current.name}` : '✓ ' + this.current.name);
     } else {
       // A decoy: lose points, but play goes on. That decoy turns red and
