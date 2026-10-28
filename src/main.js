@@ -11,6 +11,7 @@ import { Targets } from './targets.js';
 import { Anatomy } from './anatomy.js';
 import { Bone3D } from './bone3d.js';
 import { UI } from './ui.js';
+import { MusicPlayer } from './music.js';
 
 const canvas = document.getElementById('canvas');
 const world = createWorld(canvas);
@@ -18,6 +19,7 @@ const targets = new Targets(world.scene);
 const anatomy = new Anatomy(world.scene, world.camera);
 const bone3d = new Bone3D();
 const ui = new UI();
+const music = new MusicPlayer(document.getElementById('bgm'));
 
 // ── Persistent settings + run state ──────────────────────────────────────────
 const settings = Storage.getSettings();

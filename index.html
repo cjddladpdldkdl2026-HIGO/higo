@@ -172,6 +172,15 @@
     </div>
   </div>
 
+  <!-- Background music (music.js), pinned to the bottom-left corner above
+       every screen; tracks are listed in src/playlist.js -->
+  <div id="bgm" class="bgm" role="group" aria-label="Background music">
+    <button id="bgm-play" class="bgm-btn" aria-label="Play music">▶</button>
+    <button id="bgm-next" class="bgm-btn" aria-label="Next track" title="Next track">⏭</button>
+    <span id="bgm-title" class="bgm-title"></span>
+    <input id="bgm-vol" class="bgm-vol" type="range" min="0" max="1" step="0.05" aria-label="Music volume" />
+  </div>
+
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

@@ -537,3 +537,29 @@ body.cursor-aim #canvas { cursor: none; }
 @media (max-width: 700px) {
   .arena-top { grid-template-columns: 1fr auto auto; }
 }
+
+/* ── Background music widget (bottom-left corner, above every screen) ───── */
+.bgm {
+  position: fixed; left: 12px; bottom: 10px; z-index: 80;
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px 5px 5px; max-width: calc(100vw - 24px);
+  background: rgba(17, 4, 42, .85); border: 1px solid var(--line);
+  border-radius: 999px; font-family: var(--font-ui); font-size: 12px; color: var(--ink-dim);
+}
+.bgm.playing { border-color: var(--cyan); box-shadow: var(--glow-cyan); }
+.bgm-btn {
+  width: 30px; height: 30px; flex: none; border-radius: 50%; cursor: pointer;
+  border: 0; background: rgba(155, 92, 255, .25); color: var(--ink); font-size: 13px;
+}
+.bgm-btn:hover { background: rgba(45, 226, 230, .3); }
+.bgm-title { max-width: 150px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.bgm.playing .bgm-title { color: var(--cyan-soft); }
+.bgm-vol { width: 64px; accent-color: var(--cyan); }
+
+/* Keep the arena's help line clear of the widget. */
+.arena-foot { padding-left: 300px; }
+
+@media (max-width: 700px) {
+  .bgm-title, .bgm-vol { display: none; }
+  .arena-foot { padding-left: 84px; }
+}

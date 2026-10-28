@@ -6,7 +6,7 @@ $root = $PSScriptRoot
 $types = @{
   '.html' = 'text/html; charset=utf-8'; '.js' = 'text/javascript; charset=utf-8'
   '.css' = 'text/css; charset=utf-8';  '.png' = 'image/png'; '.json' = 'application/json'
-  '.svg' = 'image/svg+xml'; '.ico' = 'image/x-icon'
+  '.svg' = 'image/svg+xml'; '.ico' = 'image/x-icon'; '.mp3' = 'audio/mpeg'
 }
 
 $listener = [System.Net.HttpListener]::new()
