@@ -82,10 +82,11 @@ class View {
 
   get rect() { return this.canvas.getBoundingClientRect(); }
 
-  setBone({ geometry, center, radius }) {
+  setBone({ geometry, center, radius }, fitRadius = radius) {
     this.bone.geometry = geometry;
     this.center = center;
     this.boneRadius = radius;
+    this.fitRadius = fitRadius;
     this._clearTargets();
     this.resize();
   }
@@ -95,11 +96,12 @@ class View {
     if (!r.width || !r.height) return;
     this.renderer.setSize(r.width, r.height, false);
     this.camera.aspect = r.width / r.height;
-    // Fit the bone's bounding sphere into the view's shorter side so it stays
-    // whole whichever way it faces.
-    const tanHalf = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
-    const span = this.boneRadius * 2;
-    this.camera.position.set(0, 0, span / (2 * tanHalf * Math.min(1, this.camera.aspect)));
+    // Fit the bone's bounding sphere (grown to cover its targets) into the
+    // view's shorter side so it stays whole whichever way it faces. A sphere
+    // under perspective needs R / sin(half-fov), not R / tan, plus a small margin.
+    const half = THREE.MathUtils.degToRad(this.camera.fov / 2);
+    const sinHalf = Math.sin(Math.atan(Math.tan(half) * Math.min(1, this.camera.aspect)));
+    this.camera.position.set(0, 0, (this.fitRadius || this.boneRadius) * 1.03 / sinHalf);
     this.camera.updateProjectionMatrix();
   }
 
@@ -344,7 +346,11 @@ export class Bone3D {
     if (!this.running) return;
     this.targetRadius = BONE3D_DIFF[this.difficulty].radius
       * (mesh.radius / REF_RADIUS) * (bone.targetScale || 1);
-    this.views.forEach(v => { v.setBone(mesh); v.centreAim(); });
+    // Frame the bone plus every target ring (floated 0.4r off the surface, r
+    // wide), so long bones like the humerus don't push end targets off-screen.
+    const fit = Math.max(mesh.radius, ...bone.landmarks.map(l =>
+      toThree(l.p).sub(mesh.center).length() + this.targetRadius * 1.4));
+    this.views.forEach(v => { v.setBone(mesh, fit); v.centreAim(); });
 
     // A fixed, shuffled set of landmarks for this stage.
     this.queue = shuffle([...bone.landmarks]).slice(0, QUESTIONS_PER_STAGE);
