@@ -1,3 +1,23 @@
+# HIGO — Anatomy Aim Trainer
+
+An anatomy quiz built on the NEONSHOT aim trainer. In **Scapula** mode a
+landmark is named (e.g. *Coracoid process · 오훼돌기*) and five identical
+targets appear on a photo of the scapula — one on the real landmark, four on
+other landmarks as decoys. Shoot the right one.
+
+- The view stays still; the crosshair follows the mouse cursor (click to shoot,
+  `Esc` to end the round). Touch: tap a target.
+- The visible circle is exactly the hit area. Clicking off every target is not
+  counted; a decoy or a timeout reveals the answer in green.
+- Easy: 3 targets, 8 s · Medium: 5 targets, 6 s · Hard: 5 smaller targets, 4 s.
+- Bones and landmarks live in `src/anatomy.js` (`BONES`): an image plus
+  landmark pixel coordinates in that image.
+
+Forked from [LUCASDREYER/aim-trainer-game](https://github.com/LUCASDREYER/aim-trainer-game)
+(MIT). The original README follows.
+
+---
+
 # NEONSHOT — FPS Aim Trainer
 
 A first-person, **synthwave** aim trainer that runs entirely in the browser.

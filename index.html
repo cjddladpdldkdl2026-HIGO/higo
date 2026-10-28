@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>NEONSHOT — FPS Aim Trainer</title>
+  <title>NEONSHOT Anatomy</title>
   <meta name="description" content="A first-person, synthwave FPS aim trainer. Pointer-lock aiming, raycast shooting, persistent personal bests. Runs entirely in your browser." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,6 +41,15 @@
   <div id="hitmarker" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
   <div id="miss-flash" aria-hidden="true"></div>
   <div id="combo-flash" aria-hidden="true"></div>
+
+  <!-- Anatomy scenarios: which landmark to shoot + shot feedback -->
+  <div id="prompt" class="hide">
+    <span class="prompt-label">Hit the</span>
+    <span class="prompt-name" id="prompt-name"></span>
+    <span class="prompt-ko" id="prompt-ko"></span>
+    <div class="prompt-bar"><span id="prompt-bar-fill"></span></div>
+    <span class="prompt-note" id="prompt-note"></span>
+  </div>
 
   <!-- In-game HUD (bottom dock) -->
   <div id="hud" class="hide">

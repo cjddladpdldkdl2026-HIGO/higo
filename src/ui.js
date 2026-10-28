@@ -22,6 +22,8 @@ export class UI {
       react: $('react-val'), timer: $('timer-val'),
       combo: $('combo-flash'), hit: $('hitmarker'), miss: $('miss-flash'),
       pause: $('pause-hint'),
+      prompt: $('prompt'), promptName: $('prompt-name'), promptKo: $('prompt-ko'),
+      promptBar: $('prompt-bar-fill'), promptNote: $('prompt-note'),
       modal: $('stats-modal'), modalBody: $('stats-body'),
       statsClose: $('stats-close'), statsReset: $('stats-reset'),
     };
@@ -132,6 +134,28 @@ export class UI {
     clearTimeout(this._flashTO);
     this._flashTO = setTimeout(() => { this.el.combo.style.opacity = '0'; }, 700);
   }
+
+  /* ── Anatomy prompt ──────────────────────────────────────────────────────── */
+  setPrompt(landmark, lifeMs) {
+    this.el.promptName.textContent = landmark.name;
+    this.el.promptKo.textContent = landmark.ko;
+    this.el.prompt.classList.remove('hide');
+    // Restart the countdown bar animation for this prompt's lifetime.
+    const bar = this.el.promptBar;
+    bar.style.transition = 'none';
+    bar.style.transform = 'scaleX(1)';
+    void bar.offsetWidth;
+    bar.style.transition = `transform ${lifeMs}ms linear`;
+    bar.style.transform = 'scaleX(0)';
+  }
+  promptNote(text, kind) {
+    const n = this.el.promptNote;
+    n.textContent = text;
+    n.className = 'prompt-note show ' + (kind || '');
+    clearTimeout(this._noteTO);
+    this._noteTO = setTimeout(() => { n.className = 'prompt-note'; }, 1400);
+  }
+  hidePrompt() { this.el.prompt.classList.add('hide'); }
 
   /* ── Results screen ──────────────────────────────────────────────────────── */
   showResults(run, records) {

@@ -52,7 +52,7 @@ export function createWorld(canvas) {
   return {
     scene, camera, renderer,
 
-    resetLook() { yaw = 0; pitch = 0; },
+    resetLook(startPitch = 0) { yaw = 0; pitch = startPitch; },
 
     addLook(dx, dy, sensitivity) {
       const k = BASE_SENS * sensitivity;
@@ -63,8 +63,20 @@ export function createWorld(canvas) {
 
     kickRecoil() { recoil = 1; },
 
+    setWeaponVisible(v) { weapon.visible = v; },
+
     raycastCenter(meshes) {
       raycaster.setFromCamera(CENTER, camera);
+      return raycaster.intersectObjects(meshes, false);
+    },
+
+    /** Raycast through a screen point given in CSS pixels. */
+    raycastAt(clientX, clientY, meshes) {
+      const ndc = new THREE.Vector2(
+        (clientX / window.innerWidth) * 2 - 1,
+        -(clientY / window.innerHeight) * 2 + 1
+      );
+      raycaster.setFromCamera(ndc, camera);
       return raycaster.intersectObjects(meshes, false);
     },
 

@@ -12,7 +12,11 @@ export const SCENARIOS = [
   { id: 'flick',    label: 'Flick',    blurb: 'One target at a time — snap to it.' },
   { id: 'grid',     label: 'Gridshot', blurb: 'A field of targets. Clear them fast.' },
   { id: 'tracking', label: 'Tracking', blurb: 'Targets drift. Keep your aim glued on.' },
+  { id: 'scapula',  label: 'Scapula',  blurb: 'A landmark is named — pick the real target among the decoys.', seconds: 60 },
 ];
+
+// Scenarios that use the bone board (anatomy.js) instead of floating targets.
+export const ANATOMY_SCENARIOS = new Set(['scapula']);
 
 export const DIFFICULTIES = [
   { id: 'easy',   label: 'Easy' },

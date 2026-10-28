@@ -4,15 +4,17 @@
  * machine (menu → playing → results), the input handlers, and the loop.
  * ========================================================================== */
 
-import { ROUND_SECONDS, DIFF } from './config.js';
+import { ROUND_SECONDS, DIFF, SCENARIOS, ANATOMY_SCENARIOS } from './config.js';
 import { Storage } from './storage.js';
 import { createWorld } from './scene.js';
 import { Targets } from './targets.js';
+import { Anatomy } from './anatomy.js';
 import { UI } from './ui.js';
 
 const canvas = document.getElementById('canvas');
 const world = createWorld(canvas);
 const targets = new Targets(world.scene);
+const anatomy = new Anatomy(world.scene, world.camera);
 const ui = new UI();
 
 // ── Persistent settings + run state ──────────────────────────────────────────
@@ -36,6 +38,20 @@ let timerInterval = null;
 let spawnInterval = null;
 
 targets.configure(state.scenario, state.difficulty);
+anatomy.configure(state.difficulty);
+
+const isAnatomy = () => ANATOMY_SCENARIOS.has(state.scenario);
+const roundSeconds = () =>
+  SCENARIOS.find(s => s.id === state.scenario)?.seconds || ROUND_SECONDS;
+
+anatomy.onPrompt = (landmark, lifeMs) => ui.setPrompt(landmark, lifeMs);
+anatomy.onExpire = (landmark) => {
+  // An unanswered question counts against accuracy like a wrong answer.
+  state.shots++;
+  state.streak = 0;
+  ui.promptNote(`Time's up — ${landmark.name} is in green`, 'bad');
+  ui.updateHUD(state);
+};
 
 // ── UI wiring ─────────────────────────────────────────────────────────────────
 ui.init(state, {
@@ -49,6 +65,7 @@ ui.init(state, {
   onDifficulty(id) {
     state.difficulty = id;
     targets.configure(state.scenario, state.difficulty);
+    anatomy.configure(state.difficulty);
     Storage.saveSettings({ difficulty: id });
     ui.refreshBest(state.scenario, state.difficulty);
   },
@@ -63,16 +80,46 @@ ui.init(state, {
 // ── Pointer lock & input ───────────────────────────────────────────────────────
 const isLocked = () => document.pointerLockElement === canvas;
 
+/* Anatomy scenarios keep the view still and aim with the free cursor: the
+ * crosshair follows the mouse and shots raycast through that screen point. */
+const cursorAim = () => state.playing && isAnatomy();
+const crosshair = document.getElementById('crosshair');
+const hitmarkerEl = document.getElementById('hitmarker');
+const aim = { x: 0, y: 0 };
+
+function setAim(x, y) {
+  aim.x = x; aim.y = y;
+  for (const el of [crosshair, hitmarkerEl]) {
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+  }
+}
+
+function resetAim() {
+  for (const el of [crosshair, hitmarkerEl]) el.style.left = el.style.top = '';
+}
+
 document.addEventListener('mousemove', (e) => {
+  if (cursorAim()) { setAim(e.clientX, e.clientY); return; }
   if (!isLocked()) return;
   world.addLook(e.movementX, e.movementY, state.sensitivity);
 });
 
 document.addEventListener('pointerlockchange', () => {
-  if (state.playing) ui.setPaused(!isLocked());
+  if (state.playing && !isAnatomy()) ui.setPaused(!isLocked());
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && cursorAim()) endGame();
 });
 
 canvas.addEventListener('mousedown', (e) => {
+  if (cursorAim()) {
+    if (e.button !== 0) return;
+    setAim(e.clientX, e.clientY);
+    shoot();
+    return;
+  }
   if (touchMode) return;                 // touch devices use the touch handlers
   if (e.button !== 0 || !state.playing) return;
   if (!isLocked()) { canvas.requestPointerLock(); return; }
@@ -116,7 +163,8 @@ if (touchMode) {
       const dx = t.clientX - lastX, dy = t.clientY - lastY;
       lastX = t.clientX; lastY = t.clientY;
       moved += Math.hypot(dx, dy);
-      world.addLook(dx, dy, state.sensitivity * TOUCH_SENS);
+      if (cursorAim()) setAim(t.clientX, t.clientY);
+      else world.addLook(dx, dy, state.sensitivity * TOUCH_SENS);
     }
     e.preventDefault();
   }, { passive: false });
@@ -125,7 +173,10 @@ if (touchMode) {
     for (const t of e.changedTouches) {
       if (t.identifier !== lookId) continue;
       // A short, near-stationary touch counts as a tap-to-fire.
-      if (state.playing && moved < 14 && performance.now() - startT < 260) shoot();
+      if (state.playing && moved < 14 && performance.now() - startT < 260) {
+        if (cursorAim()) setAim(t.clientX, t.clientY);
+        shoot();
+      }
       lookId = null;
     }
   };
@@ -155,11 +206,14 @@ function startGame() {
   Object.assign(state, {
     playing: true, score: 0, shots: 0, hits: 0, streak: 0, bestStreak: 0, reactTimes: [],
   });
-  timeLeft = ROUND_SECONDS;
+  timeLeft = roundSeconds();
 
   targets.configure(state.scenario, state.difficulty);
   targets.clear();
-  world.resetLook();
+  anatomy.stop();
+  world.resetLook(isAnatomy() ? anatomy.aimPitch : 0);
+  // The gun would cover the lower-right of the bone board.
+  world.setWeaponVisible(!isAnatomy());
 
   ui.hideMenu();
   ui.clearResults();
@@ -167,16 +221,25 @@ function startGame() {
   ui.setTimer(timeLeft);
   ui.el.start.textContent = 'Run It Back';
 
-  if (touchMode) {
+  if (isAnatomy()) {
+    // Free cursor aiming: no pointer lock, crosshair starts at screen centre.
+    document.body.classList.add('cursor-aim');
+    setAim(window.innerWidth / 2, window.innerHeight / 2);
+    if (touchMode) quitBtn.classList.remove('hide');
+  } else if (touchMode) {
     fireBtn.classList.remove('hide');
     quitBtn.classList.remove('hide');
   } else {
     canvas.requestPointerLock();
   }
 
-  // seed the field
-  const seed = state.scenario === 'flick' ? 1 : DIFF[state.difficulty].count;
-  for (let i = 0; i < seed; i++) targets.spawn();
+  if (isAnatomy()) {
+    anatomy.start();
+  } else {
+    // seed the field
+    const seed = state.scenario === 'flick' ? 1 : DIFF[state.difficulty].count;
+    for (let i = 0; i < seed; i++) targets.spawn();
+  }
 
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
@@ -187,7 +250,7 @@ function startGame() {
 
   // keep tracking/flick fields topped up
   clearInterval(spawnInterval);
-  spawnInterval = setInterval(() => { if (state.playing) targets.refill(); }, 280);
+  spawnInterval = setInterval(() => { if (state.playing && !isAnatomy()) targets.refill(); }, 280);
 }
 
 function endGame() {
@@ -195,6 +258,10 @@ function endGame() {
   clearInterval(timerInterval);
   clearInterval(spawnInterval);
   targets.clear();
+  anatomy.stop();
+  ui.hidePrompt();
+  document.body.classList.remove('cursor-aim');
+  resetAim();
   if (isLocked()) document.exitPointerLock();
   ui.setPaused(false);
   lookId = null;
@@ -218,6 +285,7 @@ function endGame() {
 }
 
 function shoot() {
+  if (isAnatomy()) { shootAnatomy(); return; }
   state.shots++;
   world.kickRecoil();
   const hit = targets.resolveHit(world.raycastCenter(targets.meshes));
@@ -240,6 +308,34 @@ function shoot() {
   ui.updateHUD(state);
 }
 
+function shootAnatomy() {
+  const { result, target, struck, rt } = anatomy.judge(world.raycastAt(aim.x, aim.y, anatomy.meshes));
+  if (result === 'busy') return;          // answer still on show
+  if (result === 'miss') {
+    // Clicked off every target: no answer given, the question stays up.
+    ui.promptNote('Shoot one of the targets', '');
+    return;
+  }
+
+  state.shots++;
+  if (result === 'hit') {
+    state.reactTimes.push(rt);
+    state.hits++;
+    state.score += scoreFor(rt);
+    state.streak++;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+    if (state.streak > 1) ui.combo(state.streak);
+    ui.hitmarker();
+    ui.promptNote('✓ ' + target.name, 'good');
+  } else {
+    // A decoy: the real target lights up green before the next question.
+    state.streak = 0;
+    ui.miss();
+    ui.promptNote(`✗ That's the ${struck.name} — answer in green`, 'bad');
+  }
+  ui.updateHUD(state);
+}
+
 function scoreFor(rt) {
   const base = Math.max(10, Math.round(1000 / (rt / 500)));
   return Math.round(base * DIFF[state.difficulty].mult);
@@ -251,6 +347,7 @@ function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   targets.update(now, dt, state.playing);
+  anatomy.update(now, dt, state.playing);
   world.update(now, dt, state.playing);
   requestAnimationFrame(loop);
 }

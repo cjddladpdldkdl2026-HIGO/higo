@@ -360,3 +360,46 @@ input[type="range"]::-moz-range-thumb {
   .panel { margin: auto; }
   #fire-btn { width: 82px; height: 82px; bottom: 18px; }
 }
+
+/* ── Anatomy prompt ───────────────────────────────────────────────────────── */
+#prompt {
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+  z-index: 20; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 300px; padding: 10px 26px 12px;
+  background: rgba(17, 4, 42, .82); border: 1px solid var(--cyan);
+  border-radius: var(--radius); box-shadow: var(--glow-cyan);
+  font-family: var(--font-ui); text-align: center;
+}
+#prompt.hide { display: none; }
+.prompt-label {
+  font-size: 11px; letter-spacing: .25em; text-transform: uppercase; color: var(--ink-dim);
+}
+.prompt-name {
+  font-family: var(--font-display); font-weight: 700; font-size: 28px;
+  color: var(--cyan-soft); text-shadow: var(--glow-cyan);
+}
+.prompt-ko { font-size: 15px; color: var(--ink); }
+.prompt-bar {
+  width: 100%; height: 4px; margin-top: 6px; border-radius: 2px;
+  background: rgba(255, 255, 255, .12); overflow: hidden;
+}
+.prompt-bar span {
+  display: block; height: 100%; background: var(--pink);
+  transform-origin: left center;
+}
+.prompt-note {
+  min-height: 18px; margin-top: 4px; font-size: 14px; font-weight: 600;
+  opacity: 0; transition: opacity .15s;
+}
+.prompt-note.show { opacity: 1; }
+.prompt-note.good { color: #39ff88; }
+.prompt-note.bad  { color: #ff3d6e; }
+
+@media (max-width: 600px) {
+  #prompt { min-width: 0; width: calc(100% - 32px); top: 10px; padding: 8px 14px 10px; }
+  .prompt-name { font-size: 20px; }
+}
+
+/* Anatomy scenarios aim with the free cursor; the neon crosshair replaces it. */
+body.cursor-aim #canvas { cursor: none; }
