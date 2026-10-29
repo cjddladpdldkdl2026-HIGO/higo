@@ -510,6 +510,7 @@ body.cursor-aim #canvas { cursor: none; }
 .arena-card {
   position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%);
   z-index: 5; min-width: 280px; padding: 22px 34px; text-align: center;
+  width: max-content; max-width: calc(100vw - 32px);
   display: flex; flex-direction: column; gap: 6px; pointer-events: none;
   background: rgba(17, 4, 42, .92); border: 1px solid var(--violet);
   border-radius: var(--radius); box-shadow: 0 0 40px rgba(155, 92, 255, .45);
@@ -522,6 +523,18 @@ body.cursor-aim #canvas { cursor: none; }
 .ac-sub { font-size: 16px; color: var(--ink); }
 .arena-card.good .ac-title { color: #39ff88; text-shadow: 0 0 14px rgba(57,255,136,.6); }
 .arena-card.bad .ac-title { color: #ff3d6e; text-shadow: 0 0 14px rgba(255,61,110,.5); }
+/* Continue / replay / quit choices on the stage result card. */
+.ac-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; pointer-events: auto; }
+.ac-actions:empty { display: none; }
+.ac-btn {
+  font: 600 15px var(--font-ui); color: var(--ink); cursor: pointer;
+  padding: 10px 16px; border-radius: 10px;
+  background: rgba(255, 255, 255, .06); border: 1px solid rgba(155, 92, 255, .6);
+}
+.ac-btn:hover { background: rgba(155, 92, 255, .25); }
+.ac-btn--main { background: var(--cyan-soft); color: #0a0420; border-color: transparent; }
+.ac-btn--main:hover { filter: brightness(1.1); background: var(--cyan-soft); }
+.ac-btn kbd { font: 11px monospace; opacity: .7; margin-left: 6px; }
 
 /* Simple start screen: a big Game Start button and two compact pickers. */
 .btn--start { font-size: 22px; padding: 20px; letter-spacing: .2em; margin: 8px 0 4px; }

@@ -300,7 +300,7 @@ export class Bone3D {
     this.views = els.map(el => new View(el));
     this.stats = this.views.map(() => ({ score: 0, hits: 0, shots: 0, streak: 0, bestStreak: 0, react: [] }));
     this.stage = 0;
-    this.stagesCleared = 0;
+    this.cleared = new Set();   // stage indexes cleared (replays don't double-count)
     this.current = null;
     this.phase = 'card';
     this.running = true;
@@ -328,7 +328,7 @@ export class Bone3D {
     }));
     this.onEnd({
       players: this.players, difficulty: this.difficulty, scores,
-      stagesCleared: this.stagesCleared, completed,
+      stagesCleared: this.cleared.size, completed,
     });
   }
 
@@ -374,33 +374,56 @@ export class Bone3D {
     const asked = this.queue.length;
     const last = this.stage === STAGES.length - 1;
 
+    const next = STAGES[this.stage + 1];
+    const goNext = { label: '다음 뼈 ▶', key: 'Enter', run: () => { this.stage++; this._startStage(); } };
+    const again = (label, key) => ({ label, key, run: () => this._startStage() });
+    const quit = { label: '그만하기', key: 'Esc', run: () => this.stop(this.cleared.size === STAGES.length) };
+
     if (this.players === 2) {
       const [a, b] = this.stageHits;
-      this.stagesCleared++;
+      this.cleared.add(this.stage);
       (last ? Sfx.win : Sfx.clear)();
-      this._showCard(`Stage ${this.stage + 1} done`, `P1 ${a} : ${b} P2`, last ? 'Final results next' : 'Next bone coming up');
-      this._cardTO = setTimeout(() => {
-        if (last) this.stop(true);
-        else { this.stage++; this._startStage(); }
-      }, CARD_MS);
+      this._showCard(`Stage ${this.stage + 1} done`, `P1 ${a} : ${b} P2`, last ? 'Final results next' : `다음: ${next.ko}`);
+      if (last) this._cardTO = setTimeout(() => this.stop(true), CARD_MS);
+      else this._offer([goNext, again('한 번 더', 'R'), quit]);
       return;
     }
 
     const got = this.stageHits[0];
     const cleared = got >= Math.ceil(asked * CLEAR_RATE);
-    if (cleared) this.stagesCleared++;
+    if (cleared) this.cleared.add(this.stage);
     (cleared ? (last ? Sfx.win : Sfx.clear) : Sfx.fail)();
     this._showCard(
       cleared ? 'Stage clear' : 'Try again',
       `${got} / ${asked}`,
-      cleared ? (last ? 'All bones cleared!' : 'Next bone coming up')
+      cleared ? (last ? 'All bones cleared!' : `다음: ${next.ko}`)
               : `Need ${Math.ceil(asked * CLEAR_RATE)} to clear`,
       cleared ? 'good' : 'bad'
     );
-    this._cardTO = setTimeout(() => {
-      if (cleared && last) this.stop(true);
-      else { if (cleared) this.stage++; this._startStage(); }
-    }, CARD_MS + 400);
+    if (cleared && last) this._cardTO = setTimeout(() => this.stop(true), CARD_MS + 400);
+    else if (cleared) this._offer([goNext, again('한 번 더', 'R'), quit]);
+    else this._offer([again('다시 도전', 'Enter'), quit]);
+  }
+
+  /** Wait on the result card for the player to pick what's next (buttons or keys). */
+  _offer(choices) {
+    this.phase = 'choice';
+    this.choices = choices;
+    const box = this.$('#arena-card .ac-actions');
+    box.replaceChildren(...choices.map((c, i) => {
+      const b = document.createElement('button');
+      b.className = 'ac-btn' + (i === 0 ? ' ac-btn--main' : '');
+      b.innerHTML = `${c.label} <kbd>${c.key}</kbd>`;
+      b.addEventListener('click', () => this._choose(c));
+      return b;
+    }));
+  }
+
+  _choose(choice) {
+    if (this.phase !== 'choice') return;
+    this.phase = 'card';
+    this.$('#arena-card .ac-actions').replaceChildren();
+    choice.run();
   }
 
   _showCard(kicker, title, sub, kind = '') {
@@ -408,6 +431,7 @@ export class Bone3D {
     c.querySelector('.ac-kicker').textContent = kicker;
     c.querySelector('.ac-title').textContent = title;
     c.querySelector('.ac-sub').textContent = sub;
+    c.querySelector('.ac-actions').replaceChildren();
     c.className = 'arena-card ' + kind;
   }
 
@@ -618,6 +642,11 @@ export class Bone3D {
 
     window.addEventListener('keydown', (e) => {
       if (!this.running) return;
+      if (this.phase === 'choice') {
+        const key = e.key === 'Escape' ? 'Esc' : e.key === ' ' ? 'Enter' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
+        const c = this.choices.find(c => c.key === key);
+        if (c && !e.repeat) { e.preventDefault(); this._choose(c); return; }
+      }
       if (e.key === 'Escape') { this.stop(); return; }
       if (e.key === 'm' || e.key === 'M') { Sfx.toggle(); showMute(); return; }
       if (this.players !== 2) return;
