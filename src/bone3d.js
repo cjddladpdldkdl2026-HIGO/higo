@@ -342,6 +342,7 @@ export class Bone3D {
     this.$('#arena-time').textContent = `${this.stage + 1}/${STAGES.length}`;
     this._setQuestion(bone.name, bone.ko);
     this._showCard(`Stage ${this.stage + 1}`, bone.name, bone.ko);
+    this._freezeBar(1);
     Sfx.stage();
 
     const mesh = await this._loadMesh(bone);
@@ -431,13 +432,20 @@ export class Bone3D {
     });
     this.$('.arena-label').textContent = `${this.bone.name} · ${this.asked}/${this.queue.length} — hit the`;
     this._setQuestion(this.current.name, this.current.ko);
-    const bar = this.$('#arena-bar-fill');
+    const bar = this._freezeBar(1);
     const life = BONE3D_DIFF[this.difficulty].life;
-    bar.style.transition = 'none';
-    bar.style.transform = 'scaleX(1)';
     void bar.offsetWidth;
     bar.style.transition = `transform ${life}ms linear ${TURN_MS}ms`;
     bar.style.transform = 'scaleX(0)';
+  }
+
+  /** Stop the time bar where it is (or at `scale`) — it only runs while a question is open. */
+  _freezeBar(scale) {
+    const bar = this.$('#arena-bar-fill');
+    const now = scale ?? getComputedStyle(bar).transform;
+    bar.style.transition = 'none';
+    bar.style.transform = typeof now === 'number' ? `scaleX(${now})` : now;
+    return bar;
   }
 
   /**
@@ -500,6 +508,7 @@ export class Bone3D {
 
   _reveal(text) {
     this.revealUntil = performance.now() + REVEAL_MS;
+    this._freezeBar();
     this.views.forEach(v => v.reveal(this.current));
     this.$('#arena-note').textContent = text;
     this.$('#arena-note').className = 'arena-note show';
