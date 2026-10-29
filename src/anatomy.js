@@ -48,17 +48,17 @@ const SCAPULA = {
     [805, 730, 175, 60], [835, 350, 189, 90], [835, 510, 175, 50], [835, 55, 189, 275],
   ],
   landmarks: [
-    { id: 'acromion',      name: 'Acromion',               ko: '견봉',           x: 220, y: 115 },
-    { id: 'coracoid',      name: 'Coracoid process',       ko: '오훼돌기',       x: 190, y: 210 },
+    { id: 'acromion',      name: 'Acromion',               ko: '어깨뼈봉우리',         x: 220, y: 115 },
+    { id: 'coracoid',      name: 'Coracoid process',       ko: '부리돌기',      x: 190, y: 210 },
     { id: 'glenoid',       name: 'Glenoid cavity',         ko: '관절오목',       x: 262, y: 340 },
-    { id: 'infraglenoid',  name: 'Infraglenoid tubercle',  ko: '관절아래결절',   x: 285, y: 415 },
-    { id: 'notch',         name: 'Suprascapular notch',    ko: '어깨위패임',     x: 452, y: 232 },
+    { id: 'infraglenoid',  name: 'Infraglenoid tubercle',  ko: '접시아래결절',   x: 285, y: 415 },
+    { id: 'notch',         name: 'Suprascapular notch',    ko: '어깨뼈패임',    x: 452, y: 232 },
     { id: 'sup-border',    name: 'Superior border',        ko: '위모서리',       x: 560, y: 180 },
     { id: 'sup-angle',     name: 'Superior angle',         ko: '위각',           x: 680, y: 130 },
     { id: 'medial-border', name: 'Medial border',          ko: '안쪽모서리',     x: 800, y: 450 },
     { id: 'lateral-border',name: 'Lateral border',         ko: '가쪽모서리',     x: 445, y: 570 },
     { id: 'inf-angle',     name: 'Inferior angle',         ko: '아래각',         x: 640, y: 862 },
-    { id: 'subscapular',   name: 'Subscapular fossa',      ko: '어깨밑오목',     x: 620, y: 480 },
+    { id: 'subscapular',   name: 'Subscapular fossa',      ko: '어깨뼈밑오목',    x: 620, y: 480 },
   ],
 };
 

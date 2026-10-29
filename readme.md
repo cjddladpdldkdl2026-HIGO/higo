@@ -33,8 +33,8 @@ targets appear on the real landmark and on decoy landmarks on the same side
 - `Esc` ends the run; `M` (or the speaker button) toggles sound.
 - Bones, landmarks and turn directions live in `src/bones.js`; the stage flow
   is in `src/bone3d.js`; synthesized sound effects are in `src/sfx.js`.
-- Korean names follow the KMA medical terminology (의학용어집 6th ed.), with
-  the Sino-Korean term in parentheses where the KMA lists one.
+- Korean names use the KMA medical terminology (의학용어집 6th ed.) new terms
+  only; old Sino-Korean terms (견봉, 상완골 …) are not shown.
 - The start screen is just **Game Start** plus 1P/2P and difficulty; the older
   FPS and photo scenarios are still in the code but hidden from the menu.
 - The 3D models are BodyParts3D (© 2008 DBCLS, CC BY-SA 2.1 JP); see
