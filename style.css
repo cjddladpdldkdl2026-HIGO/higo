@@ -538,6 +538,11 @@ body.cursor-aim #canvas { cursor: none; }
 
 /* Simple start screen: a big Game Start button and two compact pickers. */
 .btn--start { font-size: 22px; padding: 20px; letter-spacing: .2em; margin: 8px 0 4px; }
+
+/* Links back to the rest of the site (home, bone atlas, about) under the menu. */
+.site-links { display: flex; justify-content: center; gap: 18px; font-size: 13px; }
+.site-links a { color: var(--ink-dim); text-decoration: none; }
+.site-links a:hover { color: var(--cyan-soft); }
 .config--compact { gap: 10px; }
 .config--compact .field { gap: 0; }
 

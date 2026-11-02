@@ -90,7 +90,8 @@ scenarios, and **persistent personal bests** — all client-side, no backend.
 Plain ES modules — no build step, no framework.
 
 ```
-index.html            # markup, import map, CRT/HUD/menu shells
+index.html            # website home (bones.html = 3D atlas, about.html = credits)
+play.html             # the game: markup, import map, CRT/HUD/menu shells
 style.css             # synthwave design system (CSS custom properties)
 vendor/
   three.module.min.js # vendored Three.js (no external CDN at runtime)

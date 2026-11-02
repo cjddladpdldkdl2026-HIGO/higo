@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<!-- translate="no": browser auto-translate mangles the English and Korean
+     anatomy terms (e.g. 가시아래오목 → "보여주세요오목"), so keep it off. -->
+<html lang="ko" translate="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="google" content="notranslate" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>NEONSHOT Anatomy</title>
+  <meta name="description" content="3D 뼈 위의 과녁을 쏘아 해부학 랜드마크를 맞히는 에임 퀴즈 게임 · Anatomy aim trainer." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Three.js is vendored locally (no external CDN at runtime → fully
+       self-contained and deployable anywhere). The import map lets app code
+       use the clean `import * as THREE from 'three'` specifier. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.min.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <!-- CRT atmosphere -->
+  <div id="scanlines" aria-hidden="true"></div>
+  <div id="vignette" aria-hidden="true"></div>
+
+  <!-- Fixed first-person crosshair -->
+  <div id="crosshair" aria-hidden="true">
+    <span class="ch-line ch-up"></span>
+    <span class="ch-line ch-down"></span>
+    <span class="ch-line ch-left"></span>
+    <span class="ch-line ch-right"></span>
+    <span class="ch-dot"></span>
+  </div>
+
+  <div id="hitmarker" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <div id="miss-flash" aria-hidden="true"></div>
+  <div id="combo-flash" aria-hidden="true"></div>
+
+  <!-- Anatomy scenarios: which landmark to shoot + shot feedback -->
+  <div id="prompt" class="hide">
+    <span class="prompt-label">Hit the</span>
+    <span class="prompt-name" id="prompt-name"></span>
+    <span class="prompt-ko" id="prompt-ko"></span>
+    <div class="prompt-bar"><span id="prompt-bar-fill"></span></div>
+    <span class="prompt-note" id="prompt-note"></span>
+  </div>
+
+  <!-- In-game HUD (bottom dock) -->
+  <div id="hud" class="hide">
+    <div class="stat"><span class="stat-label">Score</span><span class="stat-val" id="score-val">0</span></div>
+    <div class="stat"><span class="stat-label">Accuracy</span><span class="stat-val" id="acc-val">—</span></div>
+    <div class="stat"><span class="stat-label">Streak</span><span class="stat-val" id="streak-val">0</span></div>
+    <div class="stat"><span class="stat-label">Avg ms</span><span class="stat-val" id="react-val">—</span></div>
+    <div class="stat stat--time"><span class="stat-label">Time</span><span class="stat-val" id="timer-val">30</span></div>
+  </div>
+
+  <div id="pause-hint" class="hide">Click to resume — move to aim · click to fire · <kbd>Esc</kbd> to pause</div>
+
+  <!-- Touch controls (shown only on coarse-pointer devices during a round) -->
+  <button id="fire-btn" class="hide" aria-label="Fire">FIRE</button>
+  <button id="quit-btn" class="hide" aria-label="Quit round">EXIT</button>
+
+  <!-- 3D bone race (bone3d.js): question bar on top, one view per player below -->
+  <div id="arena" class="hide">
+    <header class="arena-top">
+      <div class="ap" id="arena-p1">
+        <span class="ap-tag">P1</span><span class="ap-score">0</span><span class="ap-sub"></span>
+      </div>
+      <div class="arena-q">
+        <span class="arena-label">Hit the</span>
+        <span id="arena-name"></span>
+        <span id="arena-ko"></span>
+        <div class="arena-bar"><span id="arena-bar-fill"></span></div>
+        <span id="arena-note" class="arena-note"></span>
+      </div>
+      <div class="ap ap--right" id="arena-p2">
+        <span class="ap-tag">P2</span><span class="ap-score">0</span><span class="ap-sub"></span>
+      </div>
+      <div class="arena-time"><span>Stage</span><strong id="arena-time">1/5</strong></div>
+      <button id="arena-mute" class="arena-mute" aria-label="Sound on/off (M)" title="Sound on/off (M)">🔊</button>
+    </header>
+    <main class="arena-views">
+      <section class="view" id="view-1">
+        <span class="v-tag">P1 · Mouse</span>
+        <canvas></canvas>
+        <div class="v-cross" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+        <div class="v-note"></div>
+      </section>
+      <section class="view" id="view-2">
+        <span class="v-tag">P2 · Keyboard</span>
+        <canvas></canvas>
+        <div class="v-cross v-cross--p2" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+        <div class="v-note"></div>
+      </section>
+    </main>
+    <div id="arena-card" class="arena-card hide">
+      <span class="ac-kicker"></span>
+      <strong class="ac-title"></strong>
+      <span class="ac-sub"></span>
+      <div class="ac-actions"></div>
+    </div>
+    <footer class="arena-foot">
+      <span id="arena-help"></span>
+      <span class="arena-credit">3D model: BodyParts3D © 2008 DBCLS · CC BY-SA 2.1 JP</span>
+    </footer>
+  </div>
+
+  <!-- Main menu / results overlay -->
+  <div id="overlay">
+    <div class="panel">
+      <header class="brand">
+        <h1 class="logo" data-text="NEONSHOT">NEONSHOT</h1>
+        <p class="tagline" id="overlay-sub">해부학 에임 트레이너 · Anatomy aim trainer</p>
+      </header>
+
+      <div id="results-area"></div>
+
+      <!-- Simple start: one big button, then two small choices. The scenario,
+           sensitivity and stats controls stay in the DOM (ui.js wires them)
+           but are hidden; the game always runs the 3D bone stages. -->
+      <button id="start-btn" class="btn btn--primary btn--start">Game Start</button>
+
+      <div class="config config--compact">
+        <div class="field hide">
+          <label class="field-label">Scenario</label>
+          <div class="seg" id="scenario"></div>
+          <p class="field-hint" id="scenario-blurb"></p>
+        </div>
+
+        <div class="field" id="players-field">
+          <div class="seg" id="players"></div>
+        </div>
+
+        <div class="field">
+          <div class="seg" id="difficulty"></div>
+        </div>
+
+        <div class="field hide">
+          <label class="field-label">Sensitivity <span class="mono" id="sens-readout">1.00</span></label>
+          <input id="sens-slider" type="range" min="0.2" max="3" step="0.05" value="1" />
+        </div>
+
+        <div id="best-badge" class="best-badge hide">
+          <span class="best-badge-label">Personal best</span>
+          <span class="best-badge-val" id="best-score">—</span>
+        </div>
+      </div>
+
+      <nav class="site-links" aria-label="사이트">
+        <a href="./">← 홈</a><a href="bones.html">뼈 도감</a><a href="about.html">소개</a>
+      </nav>
+
+      <div class="footer-row hide">
+        <button id="stats-btn" class="btn btn--ghost">Stats &amp; Records</button>
+        <span class="hint">Pointer-lock prompt appears on start.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats modal -->
+  <div id="stats-modal" class="modal hide">
+    <div class="modal-card">
+      <header class="modal-head">
+        <h2>Stats &amp; Records</h2>
+        <button id="stats-close" class="icon-btn" aria-label="Close">✕</button>
+      </header>
+      <div id="stats-body"></div>
+      <footer class="modal-foot">
+        <button id="stats-reset" class="btn btn--ghost btn--danger">Reset all data</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Background music (music.js), pinned to the bottom-left corner above
+       every screen; tracks are listed in src/playlist.js -->
+  <div id="bgm" class="bgm" role="group" aria-label="Background music">
+    <button id="bgm-play" class="bgm-btn" aria-label="Play music">▶</button>
+    <button id="bgm-next" class="bgm-btn" aria-label="Next track" title="Next track">⏭</button>
+    <span id="bgm-title" class="bgm-title"></span>
+    <input id="bgm-vol" class="bgm-vol" type="range" min="0" max="1" step="0.05" aria-label="Music volume" />
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

@@ -1,190 +1,128 @@
 <!DOCTYPE html>
-<!-- translate="no": browser auto-translate mangles the English and Korean
-     anatomy terms (e.g. 가시아래오목 → "보여주세요오목"), so keep it off. -->
+<!-- translate="no": browser auto-translate mangles the anatomy terms. -->
 <html lang="ko" translate="no">
 <head>
   <meta charset="UTF-8" />
   <meta name="google" content="notranslate" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>NEONSHOT Anatomy</title>
-  <meta name="description" content="3D 뼈 위의 과녁을 쏘아 해부학 랜드마크를 맞히는 에임 퀴즈 게임 · Anatomy aim trainer." />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEONSHOT Anatomy — 해부학 에임 트레이너</title>
+  <meta name="description" content="3D 뼈 위의 과녁을 쏘아 해부학 랜드마크를 익히는 무료 웹 게임. 어깨뼈·위팔뼈·손뼈·골반·엉치뼈, 대한의사협회 의학용어 6판." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- Three.js is vendored locally (no external CDN at runtime → fully
-       self-contained and deployable anywhere). The import map lets app code
-       use the clean `import * as THREE from 'three'` specifier. -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "./vendor/three.module.min.js"
-    }
-  }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="site.css" />
+  <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
-
-  <!-- CRT atmosphere -->
-  <div id="scanlines" aria-hidden="true"></div>
-  <div id="vignette" aria-hidden="true"></div>
-
-  <!-- Fixed first-person crosshair -->
-  <div id="crosshair" aria-hidden="true">
-    <span class="ch-line ch-up"></span>
-    <span class="ch-line ch-down"></span>
-    <span class="ch-line ch-left"></span>
-    <span class="ch-line ch-right"></span>
-    <span class="ch-dot"></span>
-  </div>
-
-  <div id="hitmarker" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-  <div id="miss-flash" aria-hidden="true"></div>
-  <div id="combo-flash" aria-hidden="true"></div>
-
-  <!-- Anatomy scenarios: which landmark to shoot + shot feedback -->
-  <div id="prompt" class="hide">
-    <span class="prompt-label">Hit the</span>
-    <span class="prompt-name" id="prompt-name"></span>
-    <span class="prompt-ko" id="prompt-ko"></span>
-    <div class="prompt-bar"><span id="prompt-bar-fill"></span></div>
-    <span class="prompt-note" id="prompt-note"></span>
-  </div>
-
-  <!-- In-game HUD (bottom dock) -->
-  <div id="hud" class="hide">
-    <div class="stat"><span class="stat-label">Score</span><span class="stat-val" id="score-val">0</span></div>
-    <div class="stat"><span class="stat-label">Accuracy</span><span class="stat-val" id="acc-val">—</span></div>
-    <div class="stat"><span class="stat-label">Streak</span><span class="stat-val" id="streak-val">0</span></div>
-    <div class="stat"><span class="stat-label">Avg ms</span><span class="stat-val" id="react-val">—</span></div>
-    <div class="stat stat--time"><span class="stat-label">Time</span><span class="stat-val" id="timer-val">30</span></div>
-  </div>
-
-  <div id="pause-hint" class="hide">Click to resume — move to aim · click to fire · <kbd>Esc</kbd> to pause</div>
-
-  <!-- Touch controls (shown only on coarse-pointer devices during a round) -->
-  <button id="fire-btn" class="hide" aria-label="Fire">FIRE</button>
-  <button id="quit-btn" class="hide" aria-label="Quit round">EXIT</button>
-
-  <!-- 3D bone race (bone3d.js): question bar on top, one view per player below -->
-  <div id="arena" class="hide">
-    <header class="arena-top">
-      <div class="ap" id="arena-p1">
-        <span class="ap-tag">P1</span><span class="ap-score">0</span><span class="ap-sub"></span>
-      </div>
-      <div class="arena-q">
-        <span class="arena-label">Hit the</span>
-        <span id="arena-name"></span>
-        <span id="arena-ko"></span>
-        <div class="arena-bar"><span id="arena-bar-fill"></span></div>
-        <span id="arena-note" class="arena-note"></span>
-      </div>
-      <div class="ap ap--right" id="arena-p2">
-        <span class="ap-tag">P2</span><span class="ap-score">0</span><span class="ap-sub"></span>
-      </div>
-      <div class="arena-time"><span>Stage</span><strong id="arena-time">1/5</strong></div>
-      <button id="arena-mute" class="arena-mute" aria-label="Sound on/off (M)" title="Sound on/off (M)">🔊</button>
-    </header>
-    <main class="arena-views">
-      <section class="view" id="view-1">
-        <span class="v-tag">P1 · Mouse</span>
-        <canvas></canvas>
-        <div class="v-cross" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
-        <div class="v-note"></div>
-      </section>
-      <section class="view" id="view-2">
-        <span class="v-tag">P2 · Keyboard</span>
-        <canvas></canvas>
-        <div class="v-cross v-cross--p2" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
-        <div class="v-note"></div>
-      </section>
-    </main>
-    <div id="arena-card" class="arena-card hide">
-      <span class="ac-kicker"></span>
-      <strong class="ac-title"></strong>
-      <span class="ac-sub"></span>
-      <div class="ac-actions"></div>
+  <header class="site-head">
+    <div class="wrap">
+      <a class="logo" href="./">NEONSHOT</a>
+      <nav class="nav" aria-label="사이트">
+        <a href="./" aria-current="page">홈</a>
+        <a href="bones.html">뼈 도감</a>
+        <a href="about.html">소개</a>
+        <a class="nav-play" href="play.html">플레이 ▶</a>
+      </nav>
     </div>
-    <footer class="arena-foot">
-      <span id="arena-help"></span>
-      <span class="arena-credit">3D model: BodyParts3D © 2008 DBCLS · CC BY-SA 2.1 JP</span>
-    </footer>
-  </div>
+  </header>
 
-  <!-- Main menu / results overlay -->
-  <div id="overlay">
-    <div class="panel">
-      <header class="brand">
-        <h1 class="logo" data-text="NEONSHOT">NEONSHOT</h1>
-        <p class="tagline" id="overlay-sub">해부학 에임 트레이너 · Anatomy aim trainer</p>
-      </header>
-
-      <div id="results-area"></div>
-
-      <!-- Simple start: one big button, then two small choices. The scenario,
-           sensitivity and stats controls stay in the DOM (ui.js wires them)
-           but are hidden; the game always runs the 3D bone stages. -->
-      <button id="start-btn" class="btn btn--primary btn--start">Game Start</button>
-
-      <div class="config config--compact">
-        <div class="field hide">
-          <label class="field-label">Scenario</label>
-          <div class="seg" id="scenario"></div>
-          <p class="field-hint" id="scenario-blurb"></p>
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <div>
+          <p class="eyebrow">Anatomy Aim Trainer</p>
+          <h1>쏘면서 외우는<br />뼈 해부학</h1>
+          <p class="lead">3D 뼈가 돌아가며 문제를 냅니다. 화면 위의 이름을 보고 <strong>진짜 랜드마크 과녁</strong>을 가장 빨리 쏘세요. 가짜 과녁은 감점이에요.</p>
+          <div class="cta">
+            <a class="btn btn--primary" href="play.html">지금 플레이 ▶</a>
+            <a class="btn btn--ghost" href="bones.html">뼈 도감 보기</a>
+          </div>
+          <div class="hero-facts">
+            <div><b>5</b>개 뼈</div>
+            <div><b id="landmark-total">74</b>개 랜드마크</div>
+            <div><b>1P · 2P</b>대결</div>
+          </div>
         </div>
-
-        <div class="field" id="players-field">
-          <div class="seg" id="players"></div>
-        </div>
-
-        <div class="field">
-          <div class="seg" id="difficulty"></div>
-        </div>
-
-        <div class="field hide">
-          <label class="field-label">Sensitivity <span class="mono" id="sens-readout">1.00</span></label>
-          <input id="sens-slider" type="range" min="0.2" max="3" step="0.05" value="1" />
-        </div>
-
-        <div id="best-badge" class="best-badge hide">
-          <span class="best-badge-label">Personal best</span>
-          <span class="best-badge-val" id="best-score">—</span>
+        <div class="hero-stage">
+          <canvas id="hero-bone" aria-label="회전하는 3D 어깨뼈"></canvas>
+          <span class="hint">드래그해서 돌려 보세요</span>
         </div>
       </div>
+    </section>
 
-      <div class="footer-row hide">
-        <button id="stats-btn" class="btn btn--ghost">Stats &amp; Records</button>
-        <span class="hint">Pointer-lock prompt appears on start.</span>
+    <section class="block" id="how">
+      <div class="wrap">
+        <h2>이렇게 플레이해요</h2>
+        <p class="sub">설치도 가입도 없어요. 브라우저에서 바로 시작합니다.</p>
+        <div class="grid">
+          <div class="card"><div class="step-num">01</div><h3>이름을 읽고</h3><p>위쪽에 랜드마크 이름이 영어와 한국어로 나와요. 예) Acromion · 어깨뼈봉우리</p></div>
+          <div class="card"><div class="step-num">02</div><h3>뼈가 돌아가면</h3><p>그 부위가 보이도록 뼈가 자동으로 돌고, 진짜 과녁 1개와 가짜 과녁이 나타나요.</p></div>
+          <div class="card"><div class="step-num">03</div><h3>정답을 쏘세요</h3><p>빨리 맞힐수록 점수가 커요. 다른 곳을 쏘지 않고 연속으로 맞히면 콤보 보너스!</p></div>
+        </div>
       </div>
+    </section>
+
+    <section class="block" id="rules">
+      <div class="wrap">
+        <h2>규칙</h2>
+        <p class="sub">한 스테이지는 무작위 8문제. 5문제 이상 맞히면 클리어예요.</p>
+        <ul class="rules">
+          <li><b>정답</b><span>반응 속도에 따라 점수. 0.9초 뒤 다음 문제로 넘어가요.</span></li>
+          <li><b>콤보</b><span>빈 곳·가짜를 쏘지 않고 연속으로 맞히면 2연속부터 보너스(최대 +250 × 난이도 배율).</span></li>
+          <li class="bad"><b>가짜 과녁</b><span>감점(150 × 난이도 배율). 문제는 끝나지 않으니 다시 진짜를 찾으면 돼요.</span></li>
+          <li class="bad"><b>시간 초과</b><span>정답 위치를 보여 주고 다음 문제로. 오답으로 집계돼요.</span></li>
+          <li><b>스테이지 끝</b><span>다음 뼈로 갈지, 같은 뼈를 한 번 더 할지, 그만할지 직접 골라요.</span></li>
+        </ul>
+        <h3 style="margin: 36px 0 12px;">난이도</h3>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th></th><th>문제당 시간</th><th>가짜 과녁</th><th>과녁 크기</th><th>점수 배율</th></tr></thead>
+            <tbody>
+              <tr><td><b>Easy</b></td><td>8초</td><td>2개</td><td>크게</td><td>×1.0</td></tr>
+              <tr><td><b>Medium</b></td><td>6초</td><td>4개</td><td>보통</td><td>×1.5</td></tr>
+              <tr><td><b>Hard</b></td><td>4초</td><td>4개</td><td>작게</td><td>×2.0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="stages">
+      <div class="wrap">
+        <h2>5개 스테이지</h2>
+        <p class="sub">1번부터 차례대로 도전해요. 카드를 누르면 뼈 도감에서 용어를 미리 볼 수 있어요.</p>
+        <div class="grid" id="stage-list"></div>
+      </div>
+    </section>
+
+    <section class="block" id="controls">
+      <div class="wrap">
+        <h2>조작법</h2>
+        <p class="sub">2P는 한 컴퓨터에서 마우스와 키보드로 나눠서 대결해요.</p>
+        <div class="grid">
+          <div class="card"><h3>1P · 마우스</h3><p>조준: 마우스 이동<br />사격: 왼쪽 클릭 (휴대폰은 탭)<br />뼈 돌리기: 오른쪽 버튼 드래그</p></div>
+          <div class="card"><h3>2P · 키보드</h3><p>조준: <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd><br />사격: <kbd>Enter</kbd> / <kbd>Space</kbd><br />뼈 돌리기: <kbd>Shift</kbd> + 방향키</p></div>
+          <div class="card"><h3>공통</h3><p>소리 켜기/끄기: <kbd>M</kbd><br />그만하기: <kbd>Esc</kbd><br />배경음악: 왼쪽 아래 ▶</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block final-cta">
+      <div class="wrap">
+        <h2>준비됐나요?</h2>
+        <p class="sub">첫 스테이지는 어깨뼈예요.</p>
+        <div class="cta"><a class="btn btn--primary" href="play.html">게임 시작 ▶</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <span>© HIGO · 게임 코드 MIT · <a href="https://github.com/cjddladpdldkdl2026-HIGO/higo">GitHub</a></span>
+      <span>3D 모델: BodyParts3D © 2008 DBCLS · CC BY-SA 2.1 JP</span>
     </div>
-  </div>
+  </footer>
 
-  <!-- Stats modal -->
-  <div id="stats-modal" class="modal hide">
-    <div class="modal-card">
-      <header class="modal-head">
-        <h2>Stats &amp; Records</h2>
-        <button id="stats-close" class="icon-btn" aria-label="Close">✕</button>
-      </header>
-      <div id="stats-body"></div>
-      <footer class="modal-foot">
-        <button id="stats-reset" class="btn btn--ghost btn--danger">Reset all data</button>
-      </footer>
-    </div>
-  </div>
-
-  <!-- Background music (music.js), pinned to the bottom-left corner above
-       every screen; tracks are listed in src/playlist.js -->
-  <div id="bgm" class="bgm" role="group" aria-label="Background music">
-    <button id="bgm-play" class="bgm-btn" aria-label="Play music">▶</button>
-    <button id="bgm-next" class="bgm-btn" aria-label="Next track" title="Next track">⏭</button>
-    <span id="bgm-title" class="bgm-title"></span>
-    <input id="bgm-vol" class="bgm-vol" type="range" min="0" max="1" step="0.05" aria-label="Music volume" />
-  </div>
-
-  <script type="module" src="src/main.js"></script>
+  <script type="module" src="src/site.js"></script>
 </body>
 </html>

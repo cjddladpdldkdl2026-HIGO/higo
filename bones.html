@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- translate="no": browser auto-translate mangles the anatomy terms. -->
+<html lang="ko" translate="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="google" content="notranslate" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>뼈 도감 — NEONSHOT Anatomy</title>
+  <meta name="description" content="게임에 나오는 모든 해부학 랜드마크를 3D로 확인하세요. 대한의사협회 의학용어 6판 기준 한국어 이름과 영어 이름." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="site.css" />
+  <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
+</head>
+<body>
+  <header class="site-head">
+    <div class="wrap">
+      <a class="logo" href="./">NEONSHOT</a>
+      <nav class="nav" aria-label="사이트">
+        <a href="./">홈</a>
+        <a href="bones.html" aria-current="page">뼈 도감</a>
+        <a href="about.html">소개</a>
+        <a class="nav-play" href="play.html">플레이 ▶</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>뼈 도감</h1>
+      <p>게임에 나오는 랜드마크를 미리 익혀 보세요. 용어를 누르면 3D 뼈에서 위치가 표시돼요.</p>
+    </div>
+
+    <div class="tabs" id="atlas-tabs" role="tablist" aria-label="뼈 고르기"></div>
+
+    <div class="atlas">
+      <div class="atlas-view">
+        <h2 id="atlas-title"></h2>
+        <canvas id="atlas-bone" aria-label="3D 뼈 모델"></canvas>
+        <span class="hint">드래그해서 돌리기</span>
+      </div>
+      <div>
+        <input class="filter" id="atlas-filter" type="search" placeholder="용어 찾기 (한국어 또는 영어)" aria-label="용어 찾기" />
+        <div class="terms" id="atlas-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <span>용어: 대한의사협회 의학용어 6판 (단독 항목이 없는 것은 대한해부학회 용어)</span>
+      <span>3D 모델: BodyParts3D © 2008 DBCLS · CC BY-SA 2.1 JP</span>
+    </div>
+  </footer>
+
+  <script type="module" src="src/site.js"></script>
+</body>
+</html>

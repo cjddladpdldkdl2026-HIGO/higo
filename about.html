@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<!-- translate="no": browser auto-translate mangles the anatomy terms. -->
+<html lang="ko" translate="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="google" content="notranslate" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>소개 — NEONSHOT Anatomy</title>
+  <meta name="description" content="NEONSHOT Anatomy를 만든 이유, 용어 기준, 사용한 3D 모델과 라이선스." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+  <header class="site-head">
+    <div class="wrap">
+      <a class="logo" href="./">NEONSHOT</a>
+      <nav class="nav" aria-label="사이트">
+        <a href="./">홈</a>
+        <a href="bones.html">뼈 도감</a>
+        <a href="about.html" aria-current="page">소개</a>
+        <a class="nav-play" href="play.html">플레이 ▶</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>소개</h1>
+      <p>HIGO 팀이 만든 해부학 학습용 에임 게임이에요.</p>
+    </div>
+
+    <div class="prose">
+      <h2>왜 만들었나요</h2>
+      <p>해부학 랜드마크는 이름만 외워서는 실제 위치가 잘 떠오르지 않아요. 3D 뼈를 직접 돌려 보고, 시간 안에 정확한 위치를 찾아 쏘는 과정을 반복하면 <strong>이름과 위치가 함께</strong> 기억에 남도록 만들었어요.</p>
+
+      <h2>용어 기준</h2>
+      <ul>
+        <li>한국어 이름은 <strong>대한의사협회 의학용어집 6판</strong>의 신용어만 써요. (예: 어깨뼈봉우리, 두덩뼈결절)</li>
+        <li>의협 사전에 단독 항목이 없는 용어(가시위오목, 가시아래오목 등)는 <strong>대한해부학회</strong> 용어를 따라요.</li>
+        <li>영어 이름은 해부학 표준 영어 명칭을 함께 보여 줘요.</li>
+        <li>용어가 틀렸거나 이상하게 보이면 알려 주세요. 브라우저 자동 번역이 켜져 있으면 용어가 깨질 수 있어요.</li>
+      </ul>
+
+      <h2>3D 모델과 라이선스</h2>
+      <ul>
+        <li>뼈 모델: <a href="https://lifesciencedb.jp/bp3d/">BodyParts3D</a> © 2008 DBCLS (Database Center for Life Science), <strong>CC BY-SA 2.1 JP</strong>. 게임용으로 정점을 합쳐 압축 형식으로 바꿨어요.</li>
+        <li>게임 코드: MIT 라이선스. <a href="https://github.com/LUCASDREYER/aim-trainer-game">aim-trainer-game</a>(MIT)에서 출발했어요.</li>
+        <li>3D 렌더링: <a href="https://threejs.org/">Three.js</a></li>
+      </ul>
+
+      <h2>소스 코드</h2>
+      <p>전체 코드는 <a href="https://github.com/cjddladpdldkdl2026-HIGO/higo">GitHub 저장소</a>에 공개되어 있어요. 빌드 과정 없이 정적 파일만으로 동작해요.</p>
+    </div>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <span>© HIGO · 게임 코드 MIT</span>
+      <span>3D 모델: BodyParts3D © 2008 DBCLS · CC BY-SA 2.1 JP</span>
+    </div>
+  </footer>
+</body>
+</html>
