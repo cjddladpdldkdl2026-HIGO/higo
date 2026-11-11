@@ -12,6 +12,7 @@ import { Anatomy } from './anatomy.js';
 import { Bone3D } from './bone3d.js';
 import { UI } from './ui.js';
 import { MusicPlayer } from './music.js';
+import { Ranking } from './ranking.js';
 
 const canvas = document.getElementById('canvas');
 const world = createWorld(canvas);
@@ -225,6 +226,10 @@ bone3d.onEnd = ({ players, difficulty, scores, stagesCleared, completed }) => {
     const { records } = Storage.recordRun(run);
     ui.showResults(run, records);
     ui.refreshBest(state.scenario, state.difficulty);
+    const box = document.createElement('div');
+    box.className = 'rank';
+    ui.el.results.querySelector('.results')?.appendChild(box);
+    Ranking.show(box, { ...run, stages: stagesCleared });
   }
   ui.el.sub.textContent = progress;
   ui.el.start.textContent = 'Game Start';

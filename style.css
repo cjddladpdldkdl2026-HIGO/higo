@@ -289,6 +289,35 @@ input[type="range"]::-moz-range-thumb {
   color: var(--pink-soft); text-shadow: var(--glow-pink); font-size: 14px;
 }
 
+/* ── Online ranking (Supabase) ─────────────────────────────────────────────── */
+.panel { max-height: 100%; overflow-y: auto; }
+.rank { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px;
+  border: 1px solid var(--line); border-radius: 14px; background: rgba(7,1,15,.45); }
+.rank-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.rank-head b { font-family: var(--font-display); letter-spacing: 3px; font-size: 13px; color: #2de2e6;
+  text-shadow: 0 0 10px rgba(45,226,230,.5); }
+.rank-head span { font-size: 12px; color: var(--ink-faint); }
+.rank-me { text-align: center; font-size: 14px; color: #fff; }
+.rank-me strong { font-family: var(--font-display); color: var(--gold); font-size: 20px; }
+.rank-form { display: flex; gap: 8px; }
+.rank-form input { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; font: inherit; font-size: 14px;
+  color: #fff; background: rgba(255,255,255,.06); border: 1px solid var(--line); outline: none; }
+.rank-form input:focus { border-color: #2de2e6; }
+.rank-form button { padding: 9px 14px; border-radius: 10px; border: 0; font: inherit; font-weight: 700;
+  font-size: 13px; background: #2de2e6; color: #12052a; cursor: pointer; white-space: nowrap; }
+.rank-form button:disabled { opacity: .5; cursor: default; }
+.rank-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.rank-list li { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center;
+  padding: 5px 10px; border-radius: 8px; font-size: 13px; color: #e9ddff; }
+.rank-list li:nth-child(-n+3) .no { color: var(--gold); }
+.rank-list .no { font-family: var(--font-display); font-size: 13px; color: var(--ink-faint); }
+.rank-list .sc { font-family: var(--font-display); color: #fff; }
+.rank-list li.mine { background: rgba(45,226,230,.14); outline: 1px solid rgba(45,226,230,.5); }
+.rank-list li.gap { display: block; text-align: center; padding: 0; color: var(--ink-faint); }
+.rank-note { font-size: 11px; color: var(--ink-faint); text-align: center; }
+.rank-change { background: none; border: 0; padding: 0; color: var(--ink-faint); font: inherit; font-size: 11px;
+  text-decoration: underline; cursor: pointer; }
+
 /* ── Modal ─────────────────────────────────────────────────────────────────── */
 .modal {
   position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
